@@ -154,6 +154,14 @@ RETURN p
 LIMIT 1000
 ```
 
+### Group Managed Service Accounts (gMSAs)
+
+```cypher
+MATCH p = (:Base)-[:ReadGMSAPassword]->(u:User)
+RETURN p
+LIMIT 1000
+```
+
 ### Non-Tier 0 Computer Administrators
 
 ```cypher
