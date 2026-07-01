@@ -1,5 +1,5 @@
 #
-# Import-BloodHoundCECustomQueries.ps1
+# ConvertTo-BloodHoundCECustomQueriesJSON.ps1
 #
 # Export BloodHound CE Custom Queries as JSON files
 #
