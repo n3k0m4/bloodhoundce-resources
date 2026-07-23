@@ -18,54 +18,62 @@ You can directly copy the [BloodHound CE Custom
 Queries](custom_queries/BloodHound_CE_Custom_Queries.md) from your browser into
 your BloodHound CE instance.
 
-### Import
+### Import via GUI (JSON files)
 
-#### Initial Preparation
-
-Install PowerShell on Kali:
-
-```bash
-sudo apt -y install powershell
-```
-
-You can now start a new PowerShell using `pwsh`.
-
-Clone the `BloodHoundOperator` repository:
+You can generate ready-to-import JSON files and import them through the
+BloodHound CE GUI. Only `jq` is required:
 
 ```bash
-git clone https://github.com/SadProcessor/BloodHoundOperator.git
+sudo apt -y install jq
 ```
 
-#### Query Import
+Generate the JSON files:
 
-Load the BloodHoundOperator module:
-
-```powershell
-Import-Module /opt/BloodHoundOperator/BloodHoundOperator.ps1
+```bash
+./scripts/convert-to-bloodhound-ce-custom-queries-json.sh
 ```
 
-Dot-Source (note the `.` in front of the command)
-`Create-BloodHoundOperatorSession.ps1` script to create a new
-BloodHoundOperator session and make it available in your current PowerShell:
+The files are written to `custom_queries/json/` and can then be imported from
+the BloodHound CE GUI.
 
-```powershell
-. ./scripts/Create-BloodHoundOperatorSession.ps1 -Password 'YourP@ssw0rd'
+### Import via API (bash + curl)
+
+The scripts in `scripts/` talk directly to the BloodHound CE REST API, so no
+PowerShell or extra modules are needed — only `bash`, `curl` and `jq`:
+
+```bash
+sudo apt -y install curl jq
+```
+
+#### Create a Session
+
+Run `create-bloodhound-session.sh` to authenticate against the BloodHound CE
+API. It stores a session token in a session file (default:
+`$HOME/.bloodhound_ce_session`) that the import script reuses:
+
+```bash
+./scripts/create-bloodhound-session.sh -p 'YourP@ssw0rd'
 ```
 
 Parameters:
 
-- `-Password`: Password (mandatory, if you don't specify it on the commandline,
-  you will be prompted)
-- `-Username`: Username (optional, default: `admin`)
-- `-Hostname`: Hostname / IP address of the BloodHound API (optional, default:
-  `127.0.0.1`)
-- `-Port`: Port of the BloodHound API (optional, default: `8080`)
+- `-p PASSWORD`: Password (mandatory; if you don't specify it on the
+  command line, you will be prompted)
+- `-u USERNAME`: Username (optional, default: `admin`)
+- `-H HOSTNAME`: Hostname / IP address of the BloodHound API (optional,
+  default: `127.0.0.1`)
+- `-P PORT`: Port of the BloodHound API (optional, default: `8080`)
+- `-f FILE`: Session file to write (optional, default:
+  `$HOME/.bloodhound_ce_session`, or `$BH_SESSION_FILE` if set)
 
-Execute the `Import-BloodHoundCECustomQueries.ps1` script to import the custom
-queries:
+#### Query Import
 
-```powershell
-./scripts/Import-BloodHoundCECustomQueries.ps1
+Execute `import-bloodhound-ce-custom-queries.sh` to import the custom queries.
+It first removes existing queries whose name starts with `[C-`, then imports the
+current set:
+
+```bash
+./scripts/import-bloodhound-ce-custom-queries.sh
 ```
 
 The imported queries are then shown in BloodHound:
@@ -79,11 +87,22 @@ collected data.
 
 ### Usage
 
-Load the `BloodHoundOperator` module and dot-source the
-`Create-BloodHoundOperatorSession.ps1` script as explained above.
+> **Note:** These queries use the
+> [BloodHoundOperator](https://github.com/SadProcessor/BloodHoundOperator)
+> cmdlets (`BHNodeGroup`, `BHPath`, `Add-BHNodeToNodeGroup`, …), which are only
+> available in PowerShell. On Linux you can install PowerShell
+> (`sudo apt -y install powershell`, then start it with `pwsh`) and load the
+> module before using these queries.
+
+Load the `BloodHoundOperator` module and create a session:
+
+```powershell
+Import-Module ./BloodHoundOperator/BloodHoundOperator.ps1
+# Authenticate and create the operator session (see the BloodHoundOperator docs)
+```
 
 Then directly copy the [BloodHound Operator Custom Queries](custom_queries/BloodHound_Operator_Custom_Queries.md)
-from your browser into your PowerShell console.
+into your PowerShell console.
 
 ## Useful Links
 
